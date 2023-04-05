@@ -353,6 +353,81 @@ const ChatMessageItemComponent = ({
     )
     .filter(displayItem => !!displayItem);
 
+  const rules = {
+    link: (node, children, parent) => {
+      if (!isPrivate && isTwitterChannel) {
+        return (
+          <Text
+            key={node.key}
+            style={{ color: '#005fb8', textDecorationLine: 'underline' }}
+            onPress={() => onPressMention(children, node.attributes.href)}>
+            {node.attributes.href}
+          </Text>
+        );
+      }
+      return (
+        <Text key={node.key} onPress={() => onPressMention(children, node.attributes.href)}>
+          {children}
+        </Text>
+      );
+    },
+  };
+
+  const onPressMention = (e, mention) => {
+    if (!isPrivate && isTwitterChannel) {
+      openURL({
+        URL: `https://twitter.com/${mention}`,
+      });
+    }
+  };
+
+  const markdownItInstance = MarkdownIt({ typographer: true, linkify: true }).disable('blockquote');
+
+  // add twitter mention handler see https://github.com/markdown-it/linkify-it#example-2-add-twitter-mentions-handler where this is from.
+  markdownItInstance.linkify.add('@', {
+    validate: function (text, pos, self) {
+      var tail = text.slice(pos);
+
+      if (!self.re.twitter) {
+        self.re.twitter = new RegExp('^([a-zA-Z0-9_]){1,15}(?!_)(?=$|' + self.re.src_ZPCc + ')');
+      }
+      if (self.re.twitter.test(tail)) {
+        // Linkifier allows punctuation chars before prefix,
+        // but we additionally disable `@` ("@@mention" is invalid)
+        if (pos >= 2 && tail[pos - 2] === '@') {
+          return false;
+        }
+        return tail.match(self.re.twitter)[0].length;
+      }
+      return 0;
+    },
+    normalize: function (match) {
+      //match.url = 'https://twitter.com/' + match.url.replace(/^@/, '');
+    },
+  });
+
+  markdownItInstance.linkify.add('#', {
+    validate: function (text, pos, self) {
+      var tail = text.slice(pos);
+
+      if (!self.re.twitter) {
+        self.re.twitter = new RegExp('^([a-zA-Z0-9_]){1,15}(?!_)(?=$|' + self.re.src_ZPCc + ')');
+      }
+      if (self.re.twitter.test(tail)) {
+        // Linkifier allows punctuation chars before prefix,
+        // but we additionally disable `#` ("##mention" is invalid)
+        if (pos >= 2 && tail[pos - 2] === '#') {
+          return false;
+        }
+        return tail.match(self.re.twitter)[0].length;
+      }
+      return 0;
+    },
+    normalize: function (match) {
+      //match.url = 'https://twitter.com/' + match.url.replace(/^#/, '');
+    },
+  });
+
   const MessageContent = () => {
     if (emailMessageContent()) {
       return <Email emailContent={emailMessageContent()} />;
@@ -360,10 +435,8 @@ const ChatMessageItemComponent = ({
       return (
         <Markdown
           mergeStyle
-          markdownit={MarkdownIt({
-            linkify: true,
-            typographer: true,
-          }).disable('blockquote')} // disable code block
+          rules={rules}
+          markdownit={markdownItInstance} // disable code block
           onLinkPress={handleURL}
           style={{
             body: { flex: 1, minWidth: 100 },

@@ -116,29 +116,30 @@ const ReplyBox = ({ eva: { theme, style }, conversationId, inboxId, conversation
         '[@$1](mention://user/$2/' + encodeURIComponent('$1') + ')',
       );
     }
+    console.log('updatedMessage', message);
 
-    if (message || attachmentDetails) {
-      const payload = {
-        conversationId,
-        message: updatedMessage,
-        private: isPrivate,
-        file: attachmentDetails,
-      };
-      if (ccEmails) {
-        payload.message.cc_emails = ccEmails;
-      }
-      if (bccEmails) {
-        payload.message.bcc_emails = bccEmails;
-      }
-      AnalyticsHelper.track(CONVERSATION_EVENTS.SENT_MESSAGE);
-      dispatch(conversationActions.sendMessage({ data: payload }));
+    // if (message || attachmentDetails) {
+    //   const payload = {
+    //     conversationId,
+    //     message: updatedMessage,
+    //     private: isPrivate,
+    //     file: attachmentDetails,
+    //   };
+    //   if (ccEmails) {
+    //     payload.message.cc_emails = ccEmails;
+    //   }
+    //   if (bccEmails) {
+    //     payload.message.bcc_emails = bccEmails;
+    //   }
+    //   AnalyticsHelper.track(CONVERSATION_EVENTS.SENT_MESSAGE);
+    //   dispatch(conversationActions.sendMessage({ data: payload }));
 
-      setMessage('');
-      setCCEmails('');
-      setBCCEmails('');
-      setAttachmentDetails(null);
-      setPrivateMode(false);
-    }
+    //   setMessage('');
+    //   setCCEmails('');
+    //   setBCCEmails('');
+    //   setAttachmentDetails(null);
+    //   setPrivateMode(false);
+    // }
   };
 
   const inputFieldColor = () =>
