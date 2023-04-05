@@ -33,13 +33,27 @@ const findLastMessage = message => {
   return message ? getTextSubstringWithEllipsis(message, 34) : 'No content available';
 };
 
+function replaceMentionsWithUsernames(text) {
+  const regex = /\[@([^\]]+)\]\(mention:\/\/user\/\d+\/([^\)]+)\)/g;
+  // regex matches mentions in the format [@user_name](mention://user/user_id/user_name)
+  const matches = text.matchAll(regex);
+  let result = text;
+  for (const match of matches) {
+    const [fullMatch, username, userId] = match;
+    const replacement = `@${decodeURIComponent(username)}`;
+    result = result.replace(fullMatch, replacement);
+  }
+  return result;
+}
+
 const ConversationContent = ({ content, messageType, isPrivate, unReadCount }) => {
+  // console.log('content', content);
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { colors } = theme;
-  const message = content
-    ? content.replace(/\[(@[\w_. ]+)\]\(mention:\/\/(?:user|team)\/\d+\/(.*?)+\)/gi, '$1').trim()
-    : '';
+  const message = replaceMentionsWithUsernames(content);
+  console.log('message', content, message);
+
   return (
     <Fragment>
       {messageType === MESSAGE_TYPES.OUTGOING || messageType === MESSAGE_TYPES.ACTIVITY ? (
